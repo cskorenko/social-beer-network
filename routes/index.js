@@ -1,9 +1,15 @@
 const router = require('express').Router();
 const helpers = require('./helpers');
+const mongodb = require('./mongodb.utilis');
+const User = require('./user.model');
+
+mongodb.createEventListeners();
+mongodb.connect();
 
 router.get('/', (req, res) => {
   res.status(200).send('Please login to the Social Network for Beer!');
 });
+
 
 router.post('/login', (req, res) => {
   const user = {
