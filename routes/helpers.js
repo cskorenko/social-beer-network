@@ -1,21 +1,32 @@
 module.exports = {
-  validateUserInfo
+  validateInput,
+  validateCreateUserInput
 }
 
-function validateUserInfo (userInfo) {
-  let userValid = true;
+function validateInput(object) {
+  propertyArray = ["username", "password"];
+  if (object.id) {
+    return false;
+  } else {
+    for (property in propertyArray) {
+      if (object[propertyArray[property]] === "" || object.hasOwnProperty(propertyArray[property]) === false) {
+        return false;
+      };
+    };
+  };
+  return true;
+}
 
-  if(!userInfo.username && !userInfo.password) {
-    userValid = false
-  }
-
-  if(!userInfo.username > 5 && !userInfo.username < 10) {
-    userValid = false
-  }
-
-  if(!userInfo.password > 5 && !userInfo.password < 10) {
-    userValid = false;
-  }
-
-  return userValid;
+function validateCreateUserInput(object) {
+  propertyArray = ["firstname", "lastname", "email", "username", "password"];
+  if (object.id) {
+    return false;
+  } else {
+    for (property in propertyArray) {
+      if (object[propertyArray[property]] === "" || object.hasOwnProperty(propertyArray[property]) === false) {
+        return false;
+      };
+    };
+  };
+  return true;
 }

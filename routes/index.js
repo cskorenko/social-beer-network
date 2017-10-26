@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const helpers = require('./helpers');
+const userService = require('./user.service');
 const mongodb = require('./mongodb.utilis');
 const User = require('./user.model');
 
@@ -17,14 +18,33 @@ router.post('/login', (req, res) => {
     password: req.body.password
   };
 
-  if(!helpers.validateUserInfo(user)) {
-    res.status(402).send('Invalid Username or Password');
+  if(!helpers.validateInput(user)) {
+    res.status(500).send('Login requires a Username and Password');
   }
 
-  if(helpers.validateUserInfo(user)) {
+  if(!userService.validateUser(user)) {
+    res.status(500).send('Invalid Username or Password');
+  }
+
+  if(userService.validateUser(user)) {
     res.status(200).send('Welcome to the Social Network for Beer!')
   }
 
+});
+
+router.post('/createUser', (req, res) => {
+  const userData = req.body.user;
+
+  if(!helpers.validateCreateUserInput(userData)) {
+    res.status(500).send('Creating a new user requires: Firstname, Lastname, Email, Username & Password');
+  }
+
+  userService.createNewUser(userData)
+    .then((userSaved) => {
+      res.status(400).json(userSaved);
+    }).catch((e) => {
+      res.status(500).send(e);
+    })
 });
 
 
