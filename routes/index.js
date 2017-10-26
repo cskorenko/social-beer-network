@@ -11,6 +11,16 @@ router.get('/', (req, res) => {
   res.status(200).send('Please login to the Social Network for Beer!');
 });
 
+router.get('/users', (req, res) => {
+  userService.fetchAllUsers()
+    .then((usersFetched) => {
+      res.status(200).json(usersFetched);
+    })
+    .catch((e) => {
+      res.status(500).send(e);
+    })
+});
+
 
 router.post('/login', (req, res) => {
   const user = {
@@ -41,7 +51,7 @@ router.post('/createUser', (req, res) => {
 
   userService.createNewUser(userData)
     .then((userSaved) => {
-      res.status(400).json(userSaved);
+      res.status(200).json(userSaved);
     }).catch((e) => {
       res.status(500).send(e);
     })
