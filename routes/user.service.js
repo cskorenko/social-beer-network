@@ -5,7 +5,8 @@ const helpers = require('./helpers');
 module.exports = {
   fetchAllUsers,
   validateUser,
-  createNewUser
+  createNewUser,
+  deleteUserById
 }
 
 function fetchAllUsers() {
@@ -16,39 +17,43 @@ function fetchAllUsers() {
 function validateUser(currentUser) {
   passwordMatch = false;
 
-  User.find({ username: currentUser.username, password: currentUser.password}).exec()
+  return User.find({ username: currentUser.username }).exec()
   .then((userInfo) => {
-    if(userInfo.password === currentUser.password) {
+    let userData = userInfo[0];
+
+    if(currentUser.password === userData.password) {
       return passwordMatch = true;
     } else {
       return passwordMatch;
     }
-  }).catch((e) => {
-    throw new Error(`There was an error while trying to validate your user info: ${e}`);
-  });
+  })
+  .then((result) => {
+    const infoToReturn = result;
+    return infoToReturn;
+  })
+
 }
 
 function createNewUser(userInfo) {
-  User.find({ username: userInfo.username }).exec()
+  return User.find({ username: userInfo.username }).exec()
     .then((userResult) => {
-      if(userResult.username === userInfo.username) {
-        throw new Error ('Username Already Exisits')
+      let userVerify = userResult[0]
+
+      if(userVerify === undefined) {
+        let newUser = new User ({
+          firstname: userInfo.firstname,
+          lastname: userInfo.lastname,
+          email: userInfo.email,
+          username: userInfo.username,
+          password: userInfo.password
+        });
+        return newUser.save();
+      } else if(userVerify.username === userInfo.username) {
+        return 'Username Already Exists';
       }
     })
-    .catch((e) => {
-      throw new Error(`There was an error while trying to validate your user info: ${e}`);
-    });
+}
 
-  let newUser = new User ({
-    firstname: userInfo.firstname,
-    lastname: userInfo.lastname,
-    email: userInfo.email,
-    username: userInfo.username,
-    password: userInfo.password
-  });
-
-  newUser.save();
-
-  return User.find({ username: newUser.username }).exec();
-
+function deleteUserById (userIdToDelete) {
+  return User.findByIdAndRemove(userIdToDelete);
 }

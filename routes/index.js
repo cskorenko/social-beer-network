@@ -23,22 +23,25 @@ router.get('/users', (req, res) => {
 
 
 router.post('/login', (req, res) => {
-  const user = {
-    username: req.body.username,
-    password: req.body.password
-  };
+  const user = req.body.user;
 
   if(!helpers.validateInput(user)) {
     res.status(500).send('Login requires a Username and Password');
   }
 
-  if(!userService.validateUser(user)) {
-    res.status(500).send('Invalid Username or Password');
-  }
+  userService.validateUser(user)
+    .then((userResult) => {
+      if(!userResult) {
+        res.status(500).send('Invalid Username or Password');
+      }
 
-  if(userService.validateUser(user)) {
-    res.status(200).send('Welcome to the Social Network for Beer!')
-  }
+      if(userResult) {
+        res.status(200).send('Welcome to the Social Network for Beer!')
+      }
+    })
+    .catch((e) => {
+      res.status(500).send(e);
+    });
 
 });
 
@@ -47,15 +50,49 @@ router.post('/createUser', (req, res) => {
 
   if(!helpers.validateCreateUserInput(userData)) {
     res.status(500).send('Creating a new user requires: Firstname, Lastname, Email, Username & Password');
+  } else {
+    userService.createNewUser(userData)
+      .then((userSaved) => {
+        console.log(userSaved);
+        res.status(200).json(userSaved);
+      }).catch((e) => {
+        res.status(500).send(e);
+      })
   }
-
-  userService.createNewUser(userData)
-    .then((userSaved) => {
-      res.status(200).json(userSaved);
-    }).catch((e) => {
-      res.status(500).send(e);
-    })
 });
 
+router.post('/deleteUser', (req, res) => {
+  let id = req.body.id;
+
+  userService.deleteUserById(id)
+    .then((deletedUser) => {
+      console.log(deletedUser);
+      res.status(200).json(deletedUser);
+    })
+    .catch((e) => {
+      res.status(500).send(e);
+    });
+});
 
 module.exports = router;
+
+
+// function createNewUser(userInfo) {
+//   return User.find({ username: userInfo.username }).exec()
+//     .then((userResult) => {
+//       let userVerify = userResult[0]
+//
+//       if(userVerify === undefined) {
+//         let newUser = new User ({
+//           firstname: userInfo.firstname,
+//           lastname: userInfo.lastname,
+//           email: userInfo.email,
+//           username: userInfo.username,
+//           password: userInfo.password
+//         });
+//         return newUser.save();
+//       } else if(userVerify.username === userInfo.username) {
+//         return 'Username Already Exists';
+//       }
+//     })
+// }
