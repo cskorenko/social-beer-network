@@ -31,8 +31,9 @@ module.exports = function (passport) {
     };
     const options = { upsert: true, new: true };
 
-    return User.findOneAndUpdate(query, updates, options)
+    return User.findOneAndUpdate(query, updates, options).exec()
       .then((results) => {
+        console.log(results);
         return done(null, results);
       })
       .catch((e) => {

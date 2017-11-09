@@ -8,7 +8,7 @@ const routes = require('./routes')(passport);
 const configPassport = require('./configs/passport.configs');
 
 mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost/social-beer-network', {useMongoClient: true});
+mongoose.connect('mongodb://localhost/beernetwork', {useMongoClient: true});
 configPassport(passport);
 
 const app = express();
