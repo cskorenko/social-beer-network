@@ -1,98 +1,30 @@
-const router = require('express').Router();
-const helpers = require('./helpers');
-const userService = require('./user.service');
-const mongodb = require('./mongodb.utilis');
-const User = require('./user.model');
+const isLoggedIn = require('../middleware/is-logged-in.mw');
 
-mongodb.createEventListeners();
-mongodb.connect();
+module.exports = function (passport) {
+  const router = require('express').Router();
 
-router.get('/', (req, res) => {
-  res.status(200).send('Please login to the Social Network for Beer!');
-});
+  router.get('/', (req, res) => {
+    res.status(200).sendFile(process.cwd() + '/assets/index.html');
+  });
 
-router.get('/users', (req, res) => {
-  userService.fetchAllUsers()
-    .then((usersFetched) => {
-      res.status(200).json(usersFetched);
-    })
-    .catch((e) => {
-      res.status(500).send(e);
-    })
-});
+  router.get('/login', passport.authenticate('facebook'));
 
+  router.get(
+    '/login/callback',
+    passport.authenticate('facebook', { failureRedirect: '/' }),
+    (req, res) => {
+      res.redirect('/secrets');
+    }
+  );
 
-router.post('/login', (req, res) => {
-  const user = req.body.user;
+  router.get('/secrets', isLoggedIn, (req, res) => {
+    res.status(200).sendFile(process.cwd() + '/assets/secrets.html');
+  });
 
-  if(!helpers.validateInput(user)) {
-    res.status(500).send('Login requires a Username and Password');
-  }
+  router.get('/logout', (req, res) => {
+    req.logout();
+    res.redirect('/');
+  });
 
-  userService.validateUser(user)
-    .then((userResult) => {
-      if(!userResult) {
-        res.status(500).send('Invalid Username or Password');
-      }
-
-      if(userResult) {
-        res.status(200).send('Welcome to the Social Network for Beer!')
-      }
-    })
-    .catch((e) => {
-      res.status(500).send(e);
-    });
-
-});
-
-router.post('/createUser', (req, res) => {
-  const userData = req.body.user;
-
-  if(!helpers.validateCreateUserInput(userData)) {
-    res.status(500).send('Creating a new user requires: Firstname, Lastname, Email, Username & Password');
-  } else {
-    userService.createNewUser(userData)
-      .then((userSaved) => {
-        console.log(userSaved);
-        res.status(200).json(userSaved);
-      }).catch((e) => {
-        res.status(500).send(e);
-      })
-  }
-});
-
-router.post('/deleteUser', (req, res) => {
-  let id = req.body.id;
-
-  userService.deleteUserById(id)
-    .then((deletedUser) => {
-      console.log(deletedUser);
-      res.status(200).json(deletedUser);
-    })
-    .catch((e) => {
-      res.status(500).send(e);
-    });
-});
-
-module.exports = router;
-
-
-// function createNewUser(userInfo) {
-//   return User.find({ username: userInfo.username }).exec()
-//     .then((userResult) => {
-//       let userVerify = userResult[0]
-//
-//       if(userVerify === undefined) {
-//         let newUser = new User ({
-//           firstname: userInfo.firstname,
-//           lastname: userInfo.lastname,
-//           email: userInfo.email,
-//           username: userInfo.username,
-//           password: userInfo.password
-//         });
-//         return newUser.save();
-//       } else if(userVerify.username === userInfo.username) {
-//         return 'Username Already Exists';
-//       }
-//     })
-// }
+  return router;
+}
